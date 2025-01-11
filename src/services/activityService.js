@@ -20,9 +20,11 @@ const show = async (activityId) => {
     const res = await fetch(`${BASE_URL}/${activityId}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
-    return res.json();
+    if (!res.ok) throw new Error(`Error fetching activity details: ${res.status}`);
+    return await res.json();
   } catch (error) {
-    console.log(error);
+    console.error('Error fetching activity details:', error);
+    throw error;
   }
 };
 
@@ -76,4 +78,4 @@ const deleteActivity = async (activityId) => {
   }
 };
 
-export { index, createActivity, updateActivity, deleteActivity };
+export { index, createActivity, updateActivity, deleteActivity, show };

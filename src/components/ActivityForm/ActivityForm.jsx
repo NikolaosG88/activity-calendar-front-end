@@ -28,7 +28,7 @@ const ActivityForm = ({ handleSubmit }) => {
     night: ['Prepare for the morning', 'Read a book', 'Go clubbing', 'Meditate'],
   };
 
-  const activityTypes = ['Hard', 'Easy', 'Creative', 'Detrimental'];
+  const activityTypes = ['Hard', 'Easy', 'Creative', 'Routine'];
 
   useEffect(() => {
     const fetchActivity = async () => {
