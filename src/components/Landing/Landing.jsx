@@ -1,3 +1,5 @@
+//components/landing/landing.jsx
+
 const Landing = () => {
   return (
     <main>

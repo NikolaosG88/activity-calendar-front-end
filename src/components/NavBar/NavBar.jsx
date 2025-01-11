@@ -1,17 +1,25 @@
+// src/components/NavBar/NavBar.jsx
+
 import { Link } from 'react-router-dom';
 import { AuthedUserContext } from '../../App';
 import { useContext } from 'react';
 
 const NavBar = ({ handleSignout }) => {
   const user = useContext(AuthedUserContext);
+
   return (
     <>
       {user ? (
         <nav>
           <ul>
-            <li>Welcome, {user.username}</li>
             <li>
               <Link to="/">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/activities/new">New Activity</Link>
+            </li>
+            <li>
+              <Link to="/activities">View All Activities</Link>
             </li>
             <li>
               <Link to="" onClick={handleSignout}>
@@ -35,4 +43,5 @@ const NavBar = ({ handleSignout }) => {
     </>
   );
 };
+
 export default NavBar;
