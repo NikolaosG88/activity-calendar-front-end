@@ -1,34 +1,33 @@
-// src/services/activityService.js
+//front-end// src/services/activityService.js
 
 const BASE_URL = `${import.meta.env.VITE_EXPRESS_BACKEND_URL}/activities`;
 
+// Fetch all activities
 const index = async () => {
   try {
     const res = await fetch(BASE_URL, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
-    if (!res.ok) throw new Error(`Error fetching activities: ${res.status}`);
     return res.json();
   } catch (error) {
     console.error('Error fetching activities:', error);
-    return null; // Handle null case in the UI
   }
 };
 
+// Fetch a specific activity entry by ID
 const show = async (activityId) => {
   try {
     const res = await fetch(`${BASE_URL}/${activityId}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
-    if (!res.ok) throw new Error(`Error fetching activity details: ${res.status}`);
-    return await res.json();
+    return res.json();
   } catch (error) {
-    console.error('Error fetching activity details:', error);
-    throw error;
+    console.error('Error fetching activity:', error);
   }
 };
 
-const createActivity = async (activityData) => {
+// Create a new activity entry
+const create = async (activityFormData) => {
   try {
     const res = await fetch(BASE_URL, {
       method: 'POST',
@@ -36,17 +35,16 @@ const createActivity = async (activityData) => {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(activityData),
+      body: JSON.stringify(activityFormData),
     });
-    if (!res.ok) throw new Error(`Error creating activity: ${res.status}`);
     return res.json();
   } catch (error) {
     console.error('Error creating activity:', error);
-    return null;
   }
 };
 
-const updateActivity = async (activityId, activityData) => {
+// Update an activity entry
+const update = async (activityId, activityFormData) => {
   try {
     const res = await fetch(`${BASE_URL}/${activityId}`, {
       method: 'PUT',
@@ -54,28 +52,85 @@ const updateActivity = async (activityId, activityData) => {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(activityData),
+      body: JSON.stringify(activityFormData),
     });
-    if (!res.ok) throw new Error(`Error updating activity: ${res.status}`);
     return res.json();
   } catch (error) {
     console.error('Error updating activity:', error);
-    return null;
   }
 };
 
+// Delete an activity entry
 const deleteActivity = async (activityId) => {
   try {
     const res = await fetch(`${BASE_URL}/${activityId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
     });
-    if (!res.ok) throw new Error(`Error deleting activity: ${res.status}`);
     return res.json();
   } catch (error) {
     console.error('Error deleting activity:', error);
-    return null;
   }
 };
 
-export { index, createActivity, updateActivity, deleteActivity, show };
+// Add a new activity type to a specific time of day
+const createActivityType = async (activityId, timeOfDay, typeFormData) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${activityId}/types/${timeOfDay}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(typeFormData),
+    });
+    return res.json();
+  } catch (error) {
+    console.error('Error creating activity type:', error);
+  }
+};
+
+// Update a specific activity type
+const updateActivityType = async (activityId, typeId, typeFormData) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${activityId}/types/${typeId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(typeFormData),
+    });
+    return res.json();
+  } catch (error) {
+    console.error('Error updating activity type:', error);
+  }
+};
+
+// Delete a specific activity type
+const deleteActivityType = async (activityId, typeId) => {
+  try {
+    const res = await fetch(`${BASE_URL}/${activityId}/types/${typeId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return res.json();
+  } catch (error) {
+    console.error('Error deleting activity type:', error);
+  }
+};
+
+export {
+  index,
+  show,
+  create,
+  update,
+  deleteActivity,
+  createActivityType,
+  updateActivityType,
+  deleteActivityType,
+};

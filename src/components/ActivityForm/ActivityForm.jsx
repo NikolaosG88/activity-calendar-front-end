@@ -1,26 +1,10 @@
-// src/components/ActivityForm/ActivityForm.jsx
+//src/components/ActivityForm/ActivityForm.jsx
+
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import * as activityService from '../../services/activityService';
 
-const ActivityForm = ({ handleSubmit }) => {
-  const [formData, setFormData] = useState({
-    date: '',
-    morning: { selectedActivity: '', selectedType: '', activityStack: [] },
-    afternoon: { selectedActivity: '', selectedType: '', activityStack: [] },
-    evening: { selectedActivity: '', selectedType: '', activityStack: [] },
-    night: { selectedActivity: '', selectedType: '', activityStack: [] },
-  });
-  const [customEntryEnabled, setCustomEntryEnabled] = useState({
-    morning: false,
-    afternoon: false,
-    evening: false,
-    night: false,
-  });
-  const [message, setMessage] = useState('');
-  const { activityId } = useParams();
-  const navigate = useNavigate();
-
+const ActivityForm = (props) => {
   const activityOptions = {
     morning: ['Morning hygiene', 'Breakfast', 'Leave to work', 'Work from home'],
     afternoon: ['Lunchbreak', 'Finish work', 'Return home', 'Go groceries'],
@@ -28,191 +12,219 @@ const ActivityForm = ({ handleSubmit }) => {
     night: ['Prepare for the morning', 'Read a book', 'Go clubbing', 'Meditate'],
   };
 
-  const activityTypes = ['Hard', 'Easy', 'Creative', 'Routine'];
+  const activityTypes = ['Hard', 'Easy', 'Creative', 'Routine', 'Detrimental'];
+
+  const [formData, setFormData] = useState({
+    date: '',
+    activities: {
+      morning: { activityTypes: [] },
+      afternoon: { activityTypes: [] },
+      evening: { activityTypes: [] },
+      night: { activityTypes: [] },
+    },
+  });
+
+  const [newActivity, setNewActivity] = useState({
+    timeOfDay: 'morning',
+    activityName: '',
+    activityType: '',
+  });
+
+  const { activityId } = useParams(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchActivity = async () => {
-      if (activityId) {
-        try {
-          const activityData = await activityService.show(activityId);
-          setFormData(activityData);
-        } catch (error) {
-          console.error('Error fetching activity:', error);
-          setMessage('Error loading activity data.');
-        }
-      }
+      const activityData = await activityService.show(activityId);
+      setFormData({
+        date: activityData?.date || '', 
+        activities: {
+          morning: activityData?.activities?.morning || { activityTypes: [] },
+          afternoon: activityData?.activities?.afternoon || { activityTypes: [] },
+          evening: activityData?.activities?.evening || { activityTypes: [] },
+          night: activityData?.activities?.night || { activityTypes: [] },
+        },
+      });
     };
-    fetchActivity();
+    if (activityId) fetchActivity();
   }, [activityId]);
 
-  const handleAddToStack = (timePeriod) => {
-    const selectedActivity = formData[timePeriod].selectedActivity || '(New Entry)';
-    const selectedType = formData[timePeriod].selectedType; // Allow blank type
-
-    if (!selectedActivity.trim()) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      [timePeriod]: {
-        ...prev[timePeriod],
-        activityStack: [
-          ...prev[timePeriod].activityStack,
-          { activityName: selectedActivity, type: selectedType || '' },
-        ],
-        selectedActivity: '',
-        selectedType: '',
-      },
-    }));
+  const handleDateChange = (e) => {
+    setFormData({ ...formData, date: e.target.value });
   };
 
-  const handleChange = (evt, timePeriod, field) => {
-    const value = evt.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      [timePeriod]: {
-        ...prev[timePeriod],
-        [field]: value,
-      },
-    }));
+  const handleNewActivityChange = (field, value) => {
+    setNewActivity((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleCustomEntry = (timePeriod) => {
-    setCustomEntryEnabled((prev) => ({
-      ...prev,
-      [timePeriod]: !prev[timePeriod],
-    }));
-
-    if (!customEntryEnabled[timePeriod]) {
-      setFormData((prev) => ({
-        ...prev,
-        [timePeriod]: {
-          ...prev[timePeriod],
-          selectedActivity: '',
+  const handleAddActivity = () => {
+    const { timeOfDay, activityName, activityType } = newActivity;
+    if (activityName && activityType) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        activities: {
+          ...prevFormData.activities,
+          [timeOfDay]: {
+            ...prevFormData.activities[timeOfDay],
+            activityTypes: [
+              ...(prevFormData.activities[timeOfDay]?.activityTypes || []),
+              { activityName, activityType },
+            ],
+          },
         },
       }));
+      setNewActivity({ timeOfDay: 'morning', activityName: '', activityType: '' });
     }
   };
 
-  const onSubmit = async (evt) => {
-    evt.preventDefault();
-    if (!formData.date.trim()) {
-      setMessage('Date is required.');
-      return;
-    }
-
-    const consolidatedActivities = {
-      date: formData.date,
+  const handleRemoveActivity = (timeOfDay, index) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       activities: {
-        morning: formData.morning.activityStack,
-        afternoon: formData.afternoon.activityStack,
-        evening: formData.evening.activityStack,
-        night: formData.night.activityStack,
+        ...prevFormData.activities,
+        [timeOfDay]: {
+          ...prevFormData.activities[timeOfDay],
+          activityTypes: prevFormData.activities[timeOfDay].activityTypes.filter((_, i) => i !== index),
+        },
       },
+    }));
+  };
+
+  const handleEditActivity = (timeOfDay, index) => {
+    const activityToEdit = formData.activities[timeOfDay].activityTypes[index];
+    setNewActivity({
+      timeOfDay,
+      activityName: activityToEdit.activityName,
+      activityType: activityToEdit.activityType,
+    });
+    handleRemoveActivity(timeOfDay, index);
+  };
+
+  const handleSubmit = async (evt) => {
+    evt.preventDefault();
+  
+    const defaultActivities = {
+      morning: formData.activities?.morning || { activityTypes: [] },
+      afternoon: formData.activities?.afternoon || { activityTypes: [] },
+      evening: formData.activities?.evening || { activityTypes: [] },
+      night: formData.activities?.night || { activityTypes: [] },
     };
-
-    try {
-      const savedActivity = await handleSubmit(consolidatedActivities);
-      setMessage('Activities for the day saved successfully! Redirecting...');
-
-      // Check if savedActivity._id is valid and matches the route format
-      if (savedActivity && savedActivity._id) {
-        navigate(`/activities/${savedActivity._id}`);
-      } else {
-        setMessage('Error: Activity ID missing. Unable to redirect.');
-      }
-    } catch (error) {
-      console.error('Error saving activity:', error);
-      setMessage('Failed to save activities. Please try again.');
+  
+    const updatedFormData = {
+      ...formData,
+      activities: defaultActivities,
+    };
+  
+    console.log('Submitting Form Data:', updatedFormData);
+  
+    if (activityId) {
+      await props.handleUpdateActivity(activityId, updatedFormData);
+    } else {
+      await props.handleAddActivity(updatedFormData);
     }
+  
+    navigate('/activities');
   };
 
   return (
     <main>
-      <h1>{activityId ? 'Edit Activity' : 'New Activity'}</h1>
-      {message && <p>{message}</p>}
-      <form onSubmit={onSubmit}>
-        <label htmlFor="date">Date</label>
+      <form onSubmit={handleSubmit}>
+        <h1>{activityId ? 'Edit Activity Entry' : 'New Activity Entry'}</h1>
+
+        {/* Date Input */}
+        <label htmlFor="date-input">Date:</label>
         <input
           required
           type="date"
-          id="date"
-          name="date"
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          id="date-input"
+          value={formData.date || ''}
+          onChange={handleDateChange}
         />
 
-        {['morning', 'afternoon', 'evening', 'night'].map((time) => (
-          <div key={time}>
-            <h3>{`${time.charAt(0).toUpperCase() + time.slice(1)} Activities`}</h3>
-            {!customEntryEnabled[time] && (
-              <>
-                <label htmlFor={`${time}-activity`}>Select Activity</label>
-                <select
-                  id={`${time}-activity`}
-                  value={formData[time].selectedActivity}
-                  onChange={(e) => handleChange(e, time, 'selectedActivity')}
-                >
-                  <option value="">Select an activity</option>
-                  {activityOptions[time].map((option, idx) => (
-                    <option key={idx} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </>
-            )}
+        <h3>Add Activity</h3>
 
-            {customEntryEnabled[time] && (
-              <>
-                <label htmlFor={`${time}-custom`}>Enter Custom Activity</label>
-                <input
-                  type="text"
-                  id={`${time}-custom`}
-                  value={formData[time].selectedActivity}
-                  onChange={(e) => handleChange(e, time, 'selectedActivity')}
-                  placeholder="Enter custom activity"
-                />
-              </>
-            )}
+        <label htmlFor="timeOfDay-select">Time of Day:</label>
+        <select
+          id="timeOfDay-select"
+          value={newActivity.timeOfDay}
+          onChange={(e) => handleNewActivityChange('timeOfDay', e.target.value)}
+        >
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+          <option value="night">Night</option>
+        </select>
 
-            <button
-              type="button"
-              onClick={() => toggleCustomEntry(time)}
-            >
-              {customEntryEnabled[time] ? 'Use Predefined Activity' : 'Enter Custom Activity'}
-            </button>
+        <label htmlFor="activityName-input">Activity Name:</label>
+        <select
+          id="activityName-input"
+          value={newActivity.activityName}
+          onChange={(e) => handleNewActivityChange('activityName', e.target.value)}
+        >
+          <option value="">-- Select an activity --</option>
+          {activityOptions[newActivity.timeOfDay]?.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
 
-            <label htmlFor={`${time}-type`}>Select Type</label>
-            <select
-              id={`${time}-type`}
-              value={formData[time].selectedType}
-              onChange={(e) => handleChange(e, time, 'selectedType')}
-            >
-              <option value="">Select type</option>
-              {activityTypes.map((type, idx) => (
-                <option key={idx} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+        <input
+          type="text"
+          placeholder="Custom activity"
+          value={newActivity.activityName}
+          onChange={(e) => handleNewActivityChange('activityName', e.target.value)}
+        />
 
-            <button
-              type="button"
-              onClick={() => handleAddToStack(time)}
-            >
-              Add Activity
-            </button>
+        <label htmlFor="activityType-input">Activity Type:</label>
+        <select
+          id="activityType-input"
+          value={newActivity.activityType}
+          onChange={(e) => handleNewActivityChange('activityType', e.target.value)}
+        >
+          <option value="">-- Select an activity type --</option>
+          {activityTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
 
-            <h4>Added Activities:</h4>
+        <button type="button" onClick={handleAddActivity}>
+          Add Activity
+        </button>
+
+        {Object.keys(formData.activities).map((timeOfDay) => (
+          <div key={timeOfDay}>
+            <h3>{timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}</h3>
             <ul>
-              {formData[time].activityStack.map((activity, idx) => (
-                <li key={idx}>{`${activity.activityName}${activity.type ? ` (${activity.type})` : ''}`}</li>
-              ))}
+              {Array.isArray(formData.activities[timeOfDay]?.activityTypes) &&
+              formData.activities[timeOfDay]?.activityTypes.length ? (
+                formData.activities[timeOfDay].activityTypes.map((activity, index) => (
+                  <li key={index}>
+                    {activity?.activityName || 'No activity logged'} (
+                    {activity?.activityType || 'No type specified'})
+                    <button
+                      type="button"
+                      onClick={() => handleEditActivity(timeOfDay, index)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveActivity(timeOfDay, index)}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li>No activities logged for this time.</li>
+              )}
             </ul>
           </div>
         ))}
-
-        <button type="submit">Submit Daily Activities</button>
+        <button type="submit">SUBMIT</button>
       </form>
     </main>
   );

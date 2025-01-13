@@ -1,4 +1,4 @@
-//components/landing/landing.jsx
+//front-end src/components/landing/landing.jsx
 
 const Landing = () => {
   return (

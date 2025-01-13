@@ -1,85 +1,103 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+// front-end/src/components/activitydetails/activitydetails
+
+import { Link, useParams } from 'react-router-dom';
+import { AuthedUserContext } from '../../App';
+import { useState, useEffect, useContext } from 'react';
 import * as activityService from '../../services/activityService';
 
-const ActivityDetails = () => {
-  const { activityId } = useParams();
-  const navigate = useNavigate();
-  const [activityData, setActivityData] = useState(null);
-  const [error, setError] = useState('');
+const ActivityDetails = (props) => {
+  const [activity, setActivity] = useState(null);
+  const user = useContext(AuthedUserContext);
+  const { activityId } = useParams(); // Get activity ID from URL params
+
+  // Handle adding a new activity type
+  const handleAddActivityType = async (typeFormData, timeOfDay) => {
+    const newType = await activityService.createActivityType(activityId, timeOfDay, typeFormData);
+    setActivity({
+      ...activity,
+      activities: {
+        ...activity.activities,
+        [timeOfDay]: {
+          ...activity.activities[timeOfDay],
+          activityTypes: [...activity.activities[timeOfDay].activityTypes, newType],
+        },
+      },
+    });
+  };
+
+  // Handle deleting an activity type
+  const handleDeleteActivityType = async (typeId, timeOfDay) => {
+    await activityService.deleteActivityType(activityId, typeId, timeOfDay);
+    setActivity({
+      ...activity,
+      activities: {
+        ...activity.activities,
+        [timeOfDay]: {
+          ...activity.activities[timeOfDay],
+          activityTypes: activity.activities[timeOfDay].activityTypes.filter((type) => type._id !== typeId),
+        },
+      },
+    });
+  };
 
   useEffect(() => {
-    const fetchActivityDetails = async () => {
-      try {
-        console.log(`Fetching details for activity ID: ${activityId}`);
-        const data = await activityService.show(activityId);
-        if (!data) {
-          setError('No data found for this activity.');
-        } else {
-          setActivityData(data);
-        }
-      } catch (err) {
-        setError('Error fetching activity details.');
-        console.error('Error:', err);
-      }
+    const fetchActivity = async () => {
+      const activityData = await activityService.show(activityId);
+      console.log('activityData:', activityData);
+      setActivity(activityData);
     };
-
-    if (activityId) fetchActivityDetails();
+    fetchActivity();
   }, [activityId]);
 
-  if (error) {
-    return (
-      <main>
-        <h1>Error</h1>
-        <p>{error}</p>
-        <Link to="/">Go Back to Dashboard</Link>
-      </main>
-    );
-  }
-
-  if (!activityData) {
-    return (
-      <main>
-        <h1>Loading...</h1>
-        <p>Fetching activity details. Please wait.</p>
-      </main>
-    );
-  }
-
-  const handleEditClick = () => {
-    navigate(`/activities/edit/${activityId}`);
-  };
+  if (!activity) return <main>Loading...</main>;
 
   return (
     <main>
-      <h1>Activity Details for {activityData.date || 'Unknown Date'}</h1>
-      <nav>
-        <Link to="/">Go Back to Dashboard</Link>
-        <Link to="/activities/new">Add New Activity</Link>
-        <button onClick={handleEditClick}>Edit Activity</button>
-      </nav>
-      <div>
+      <header>
+        <h1>Activity Entry</h1>
+        <p>
+          {activity.author?.username || 'Anonymous'} logged on {new Date(activity.createdAt).toLocaleDateString()}
+        </p>
+        {activity.author._id === user._id && (
+          <>
+            <Link to={`/activities/${activityId}/edit`}>Edit</Link>
+            <button onClick={() => props.handleDeleteActivity(activityId)}>Delete</button>
+          </>
+        )}
+      </header>
+
+      <section>
         <h2>Daily Activities</h2>
-        {['morning', 'afternoon', 'evening', 'night'].map((time) => (
-          <div key={time}>
-            <h3>{`${time.charAt(0).toUpperCase() + time.slice(1)}`}</h3>
-            {activityData[time]?.activityStack?.length > 0 ? (
+        {['morning', 'afternoon', 'evening', 'night'].map((timeOfDay) => (
+          <article key={timeOfDay}>
+            <header>
+              <h3>{timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}</h3>
+              <p>
+                <strong>Activity Name:</strong> {activity.activities[timeOfDay]?.activityName || 'No activity logged'}
+              </p>
               <ul>
-                {activityData[time].activityStack.map((activity, idx) => (
-                  <li key={idx}>
-                    <strong>{activity.activityName || 'No Name Provided'}</strong> - {activity.type || 'No Type Specified'}
-                  </li>
-                ))}
+                {activity.activities[timeOfDay]?.activityTypes.length ? (
+                  activity.activities[timeOfDay].activityTypes.map((type) => (
+                    <li key={type._id}>
+                      {type.type} by {type.author?.username || 'Anonymous'}
+                      {type.author?._id === user._id && (
+                        <>
+                          <Link to={`/activities/${activityId}/types/${type._id}/edit`}>Edit</Link>
+                          <button onClick={() => handleDeleteActivityType(type._id, timeOfDay)}>Delete</button>
+                        </>
+                      )}
+                    </li>
+                  ))
+                ) : (
+                  <p>No activity types added for this time.</p>
+                )}
               </ul>
-            ) : (
-              <p>No activities recorded for this time period.</p>
-            )}
-          </div>
+            </header>
+          </article>
         ))}
-      </div>
+      </section>
     </main>
   );
 };
 
 export default ActivityDetails;
-

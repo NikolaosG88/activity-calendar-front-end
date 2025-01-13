@@ -1,4 +1,4 @@
-// src/components/NavBar/NavBar.jsx
+//front-end/src/components/NavBar/NavBar.jsx
 
 import { Link } from 'react-router-dom';
 import { AuthedUserContext } from '../../App';

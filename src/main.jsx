@@ -1,3 +1,4 @@
+//front-end activity calendar//mai.jsx
 import { BrowserRouter } from 'react-router-dom'; // import BrowserRouter
 import React from 'react';
 import ReactDOM from 'react-dom/client';

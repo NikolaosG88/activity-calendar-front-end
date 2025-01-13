@@ -1,4 +1,4 @@
-//src/components/SigninForm/SigninForm.jsx
+//front-end/src/components/SigninForm/SigninForm.jsx
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';

@@ -1,58 +1,75 @@
-//activity-calendar-front-end/app.jsx
+//activity-calendar-front-end/App.jsx
 
 import { useState, createContext, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import NavBar from './components/NavBar/NavBar';
+import ActivityList from './components/ActivityList/ActivityList';
+import ActivityDetails from './components/ActivityDetails/ActivityDetails';
 import Landing from './components/Landing/Landing';
 import Dashboard from './components/Dashboard/Dashboard';
 import SignupForm from './components/SignupForm/SignupForm';
 import SigninForm from './components/SigninForm/SigninForm';
+import * as authService from '../src/services/authService'; // import auth service
+import * as activityService from './services/activityService'; // import activity service
 import ActivityForm from './components/ActivityForm/ActivityForm';
-import ActivityDetails from './components/ActivityDetails/ActivityDetails';
-import * as authService from './services/authService';
-import * as activityService from './services/activityService';
+import ActivityTypeForm from './components/ActivityTypeForm/ActivityTypeForm';
 
 export const AuthedUserContext = createContext(null);
 
 const App = () => {
-  const [user, setUser] = useState(authService.getUser());
-  const [activities, setActivities] = useState([]);
+  const [user, setUser] = useState(authService.getUser()); // using the method from authService
+  const [activities, setActivities] = useState([]); // List of activities
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchActivities = async () => {
-      if (user) {
-        const fetchedActivities = await activityService.index();
-        setActivities(fetchedActivities || []);
-      }
+    const fetchAllActivities = async () => {
+      const activitiesData = await activityService.index(); // Fetch all activities
+      console.log('activitiesData:', activitiesData);
+      setActivities(activitiesData);
     };
-    fetchActivities();
+    if (user) fetchAllActivities();
   }, [user]);
 
-  const handleAddActivity = async (newActivity) => {
-    const createdActivity = await activityService.createActivity(newActivity);
-    if (createdActivity) {
-      setActivities([...activities, createdActivity]);
-      navigate(`/activities/${createdActivity._id}`);
-    }
+  const handleAddActivity = async (activityFormData) => {
+    const newActivity = await activityService.create(activityFormData);
+    setActivities([newActivity, ...activities]);
+    console.log('activityFormData', activityFormData);
+    navigate('/activities');
   };
 
   const handleDeleteActivity = async (activityId) => {
-    await activityService.deleteActivity(activityId);
-    setActivities(activities.filter((a) => a._id !== activityId));
+    const deletedActivity = await activityService.deleteActivity(activityId);
+    setActivities(activities.filter((activity) => activity._id !== deletedActivity._id));
     navigate('/activities');
+  };
+
+  const handleUpdateActivity = async (activityId, activityFormData) => {
+    console.log('activityId:', activityId, 'activityFormData:', activityFormData);
+    const updatedActivity = await activityService.update(activityId, activityFormData);
+    setActivities(activities.map((activity) => (activityId === activity._id ? updatedActivity : activity)));
+    navigate(`/activities/${activityId}`);
+  };
+
+  const handleSignout = () => {
+    authService.signout();
+    setUser(null);
+    navigate('/');
   };
 
   return (
     <>
       <AuthedUserContext.Provider value={user}>
-        <NavBar user={user} handleSignout={() => setUser(null)} />
+        <NavBar user={user} handleSignout={handleSignout} />
         <Routes>
           {user ? (
             <>
-              <Route path="/" element={<Dashboard activities={activities} />} />
-              <Route path="/activities/new" element={<ActivityForm handleSubmit={handleAddActivity} />} />
-              <Route path="/activities/:activityId" element={<ActivityDetails handleDelete={handleDeleteActivity} />} />
+              {/* Protected Routes */}
+              <Route path="/" element={<Dashboard user={user} />} />
+              <Route path="/activities" element={<ActivityList activities={activities} />} />
+              <Route path="/activities/new" element={<ActivityForm handleAddActivity={handleAddActivity} />} />
+              <Route path="/activities/:activityId" element={<ActivityDetails handleDeleteActivity={handleDeleteActivity} />} />
+              <Route path="/activities/:activityId/edit" element={<ActivityForm handleUpdateActivity={handleUpdateActivity} />} />
+              <Route path="/activities/:activityId/types/:typeId/edit" element={<ActivityTypeForm />} />
             </>
           ) : (
             <Route path="/" element={<Landing />} />

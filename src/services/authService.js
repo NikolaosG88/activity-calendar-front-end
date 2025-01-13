@@ -1,3 +1,5 @@
+//frond-end/src/services/authServices.js
+
 const BACKEND_URL = import.meta.env.VITE_EXPRESS_BACKEND_URL;
 
 const getUser = () => {
