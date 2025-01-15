@@ -9,15 +9,16 @@ const ActivityList = (props) => {
         <Link key={activity._id} to={`/activities/${activity._id}`}>
           <article>
             <header>
-              <h2>{activity.morning.activityName} ({activity.morning.activityType.activityType})</h2>
-              <h2>{activity.afternoon.activityName} ({activity.afternoon.activityType.activityType})</h2>
-              <h2>{activity.evening.activityName} ({activity.evening.activityType.activityType})</h2>
-              <h2>{activity.night.activityName} ({activity.night.activityType.activityType})</h2>
+              <h2>Activity Summary</h2>
               <p>
-                {activity.author?.username || 'Unknown User'} logged on 
-                {new Date(activity.createdAt).toLocaleDateString()}
+                {activity.author?.username || 'Unknown User'} logged activities on{' '}
+                {activity.createdAt ? new Date(activity.createdAt).toLocaleDateString() : 'Unknown Date'}
               </p>
             </header>
+            <p><strong>Morning:</strong> {activity.morning?.activityName || 'No activity recorded'} ({activity.morning?.activityType?.activityType || 'No type'})</p>
+            <p><strong>Afternoon:</strong> {activity.afternoon?.activityName || 'No activity recorded'} ({activity.afternoon?.activityType?.activityType || 'No type'})</p>
+            <p><strong>Evening:</strong> {activity.evening?.activityName || 'No activity recorded'} ({activity.evening?.activityType?.activityType || 'No type'})</p>
+            <p><strong>Night:</strong> {activity.night?.activityName || 'No activity recorded'} ({activity.night?.activityType?.activityType || 'No type'})</p>
           </article>
         </Link>
       ))}
