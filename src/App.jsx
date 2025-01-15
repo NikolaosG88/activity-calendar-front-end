@@ -12,7 +12,6 @@ import SigninForm from './components/SigninForm/SigninForm';
 import * as authService from '../src/services/authService';
 import * as activityService from './services/activityService';
 import ActivityForm from './components/ActivityForm/ActivityForm';
-// import TypeForm from './components/TypeForm/TypeForm';
 
 export const AuthedUserContext = createContext(null);
 
@@ -69,7 +68,6 @@ const App = () => {
               <Route path="/activities/new" element={<ActivityForm handleAddActivity={handleAddActivity} />} />
               <Route path="/activities/:activityId" element={<ActivityDetails handleDeleteActivity={handleDeleteActivity} />} />
               <Route path="/activities/:activityId/edit" element={<ActivityForm handleUpdateActivity={handleUpdateActivity} />} />
-              {/* <Route path="/activities/:activityId/types/:typeId/edit" element={<TypeForm />} /> */}
             </>
           ) : (
             // Public Route:

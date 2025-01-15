@@ -13,16 +13,6 @@ const ActivityForm = (props) => {
 
   const activityTypes = ['Hard', 'Easy', 'Creative', 'Routine', 'Detrimental'];
 
-  // const [formData, setFormData] = useState({
-  //   date: '',
-  //   activities: {
-  //     morning: [],
-  //     afternoon: [],
-  //     evening: [],
-  //     night: [],
-  //   },
-  // });
-
   const [formData, setFormData] = useState({
     morning: { activityName: '', activityType: '' },
     afternoon: { activityName: '', activityType: '' },
@@ -32,24 +22,6 @@ const ActivityForm = (props) => {
 
   const { activityId } = useParams();
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   const fetchActivity = async () => {
-  //     if (activityId) {
-  //       const activityData = await activityService.show(activityId);
-  //       setFormData({
-  //         date: activityData?.date || '',
-  //         activities: {
-  //           morning: activityData?.activities?.morning || [],
-  //           afternoon: activityData?.activities?.afternoon || [],
-  //           evening: activityData?.activities?.evening || [],
-  //           night: activityData?.activities?.night || [],
-  //         },
-  //       });
-  //     }
-  //   };
-  //   fetchActivity();
-  // }, [activityId]);
 
   const handleNewActivityChange = (timeOfDay, field, value) => {
     setFormData((prev) => ({
@@ -64,16 +36,6 @@ const ActivityForm = (props) => {
   const handleAddActivity = (timeOfDay) => {
     const { activityName, activityType } = formData[timeOfDay];
     if (activityName && activityType) {
-      // setFormData((prevFormData) => ({
-      //   ...prevFormData,
-      //   activities: {
-      //     ...prevFormData.activities,
-      //     [timeOfDay]: [
-      //       ...prevFormData.activities[timeOfDay],
-      //       { activityName, activityType, key: `${activityName}-${timeOfDay}-${Date.now()}` },
-      //     ],
-      //   },
-      // }));
       setFormData((prev) => ({
         ...prev,
         [timeOfDay]: { activityName: '', activityType: '' },
@@ -95,16 +57,6 @@ const ActivityForm = (props) => {
     <main>
       <form onSubmit={handleSubmit}>
         <h1>{activityId ? 'Edit Activity Entry' : 'New Activity Entry'}</h1>
-        {/* <label htmlFor="date-input">Date:</label>
-        <input
-          required
-          type="date"
-          id="date-input"
-          name="date"
-          value={formData.date || ''}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-        /> */}
-
         {Object.keys(activityOptions).map((timeOfDay) => (
           <div key={timeOfDay}>
             <h3>{timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}</h3>
