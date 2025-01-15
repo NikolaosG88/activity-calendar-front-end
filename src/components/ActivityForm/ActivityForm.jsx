@@ -143,9 +143,6 @@ const ActivityForm = (props) => {
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
-            <button type="button" onClick={() => handleAddActivity(timeOfDay)}>
-              Add {timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)} Activity
-            </button>
           </div>
         ))}
 
