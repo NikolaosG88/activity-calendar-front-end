@@ -33,6 +33,7 @@ const App = () => {
   const handleAddActivity = async (activityFormData) => {
     const newActivity = await activityService.create(activityFormData);
     setActivities([newActivity, ...activities]);
+    console.log('Submision complete:', newActivity)
     console.log('activityFormData', activityFormData);
     navigate('/activities');
   };

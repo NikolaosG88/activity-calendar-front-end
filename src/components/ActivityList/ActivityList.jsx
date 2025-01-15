@@ -9,7 +9,7 @@ const ActivityList = (props) => {
         <Link key={activity._id} to={`/activities/${activity._id}`}>
           <article>
             <header>
-              <h2>{activity.title}</h2>
+              <h2>{activity.morning.activityName}</h2>
               <p>
                 {activity.author?.username || 'Unknown User'} logged on 
                 {new Date(activity.createdAt).toLocaleDateString()}
