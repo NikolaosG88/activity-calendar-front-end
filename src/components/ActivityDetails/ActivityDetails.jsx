@@ -29,20 +29,20 @@ const ActivityDetails = ({ handleDeleteActivity }) => {
       <article>
         <header>
           <h2>Activity Details</h2>
-          <p>
+          {/* <p>
             {activity.author.username} logged activities on{' '}
             {new Date(activity.createdAt).toLocaleDateString()}
-          </p>
+          </p> */}
         </header>
-        <p><strong>Morning:</strong> {activity.morning || 'No activity recorded'}</p>
-        <p><strong>Afternoon:</strong> {activity.afternoon || 'No activity recorded'}</p>
-        <p><strong>Evening:</strong> {activity.evening || 'No activity recorded'}</p>
-        <p><strong>Night:</strong> {activity.night || 'No activity recorded'}</p>
+        {/* <p><strong>Morning:</strong> {activity.morning.activityName || 'No activity recorded'}</p>
+        <p><strong>Afternoon:</strong> {activity.afternoon.activityName || 'No activity recorded'}</p>
+        <p><strong>Evening:</strong> {activity.evening.activityName || 'No activity recorded'}</p>
+        <p><strong>Night:</strong> {activity.night.activityName || 'No activity recorded'}</p> */}
 
-        <div className="actions">
+        {/* <div className="actions">
           <Link to={`/activities/${activity._id}/edit`}><button>Edit</button></Link>
           <button onClick={handleDelete}>Delete</button>
-        </div>
+        </div> */}
       </article>
     </main>
   );

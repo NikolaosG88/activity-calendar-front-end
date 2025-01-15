@@ -108,13 +108,6 @@ const ActivityForm = (props) => {
         {Object.keys(activityOptions).map((timeOfDay) => (
           <div key={timeOfDay}>
             <h3>{timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)}</h3>
-            <ul>
-              {/* {formData.activities[timeOfDay].map((activity) => (
-                <li key={activity.key || `${activity.activityName}-${Date.now()}`}>
-                  {activity.activityName} ({activity.activityType})
-                </li>
-              ))} */}
-            </ul>
             <label htmlFor={`${timeOfDay}-activityName`}>New Entry:</label>
             <select
               id={`${timeOfDay}-activityName`}
