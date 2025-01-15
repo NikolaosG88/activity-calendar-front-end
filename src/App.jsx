@@ -9,21 +9,21 @@ import Landing from './components/Landing/Landing';
 import Dashboard from './components/Dashboard/Dashboard';
 import SignupForm from './components/SignupForm/SignupForm';
 import SigninForm from './components/SigninForm/SigninForm';
-import * as authService from '../src/services/authService'; // import auth service
-import * as activityService from './services/activityService'; // import activity service
+import * as authService from '../src/services/authService';
+import * as activityService from './services/activityService';
 import ActivityForm from './components/ActivityForm/ActivityForm';
-import ActivityTypeForm from './components/ActivityTypeForm/ActivityTypeForm';
+// import TypeForm from './components/TypeForm/TypeForm';
 
 export const AuthedUserContext = createContext(null);
 
 const App = () => {
-  const [user, setUser] = useState(authService.getUser()); // using the method from authService
-  const [activities, setActivities] = useState([]); // List of activities
+  const [user, setUser] = useState(authService.getUser());
+  const [activities, setActivities] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAllActivities = async () => {
-      const activitiesData = await activityService.index(); // Fetch all activities
+      const activitiesData = await activityService.index();
       console.log('activitiesData:', activitiesData);
       setActivities(activitiesData);
     };
@@ -53,7 +53,6 @@ const App = () => {
   const handleSignout = () => {
     authService.signout();
     setUser(null);
-    navigate('/');
   };
 
   return (
@@ -62,16 +61,17 @@ const App = () => {
         <NavBar user={user} handleSignout={handleSignout} />
         <Routes>
           {user ? (
+            // Protected Routes:
             <>
-              {/* Protected Routes */}
               <Route path="/" element={<Dashboard user={user} />} />
               <Route path="/activities" element={<ActivityList activities={activities} />} />
               <Route path="/activities/new" element={<ActivityForm handleAddActivity={handleAddActivity} />} />
               <Route path="/activities/:activityId" element={<ActivityDetails handleDeleteActivity={handleDeleteActivity} />} />
               <Route path="/activities/:activityId/edit" element={<ActivityForm handleUpdateActivity={handleUpdateActivity} />} />
-              <Route path="/activities/:activityId/types/:typeId/edit" element={<ActivityTypeForm />} />
+              {/* <Route path="/activities/:activityId/types/:typeId/edit" element={<TypeForm />} /> */}
             </>
           ) : (
+            // Public Route:
             <Route path="/" element={<Landing />} />
           )}
           <Route path="/signup" element={<SignupForm setUser={setUser} />} />
